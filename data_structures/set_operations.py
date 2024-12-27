@@ -1,38 +1,46 @@
+"""
+Enhanced Set Operations with Error Handling
+===========================================
+Demonstrates set creation, manipulation, and operations like union and intersection.
+Includes error handling for invalid set operations.
+"""
+
 def set_operations():
-    # Creating sets
-    set_a = {1, 2, 3, 4}
-    set_b = {3, 4, 5, 6}
+    """
+    Performs various set operations including union, intersection, and symmetric difference.
     
-    # Set operations
-    union = set_a | set_b  # Union of sets
-    intersection = set_a & set_b  # Intersection of sets
-    difference = set_a - set_b  # Difference of sets
-    symmetric_difference = set_a ^ set_b  # Symmetric difference
-    
-    # Adding and removing elements
-    set_a.add(7)  # Adds an element to the set
-    set_a.discard(1)  # Removes an element if it exists
-    set_a.discard(10)  # Does nothing if the element doesn't exist
-    set_b.remove(3)  # Removes an element but raises KeyError if it doesn't exist
-    
-    # Set comprehensions
-    squared_set = {x**2 for x in set_a}  # Squares each element in the set
+    Returns:
+        dict: Results of various set operations.
+    """
+    try:
+        # Creating sets
+        set_a = {1, 2, 3, 4}
+        set_b = {3, 4, 5, 6}
 
-    # Membership tests
-    is_present = 5 in set_a
-    is_absent = 10 not in set_b
+        # Performing set operations
+        union = set_a | set_b
+        intersection = set_a & set_b
+        difference = set_a - set_b
+        symmetric_difference = set_a ^ set_b
 
-    return {
-        "union": union,
-        "intersection": intersection,
-        "difference": difference,
-        "symmetric_difference": symmetric_difference,
-        "set_a_after_changes": set_a,
-        "set_b_after_changes": set_b,
-        "squared_set": squared_set,
-        "is_5_present_in_set_a": is_present,
-        "is_10_absent_in_set_b": is_absent,
-    }
+        # Adding and removing elements with safety
+        set_a.add(7)
+        set_a.discard(1)  # Safe removal
+        try:
+            set_b.remove(3)  # Risky removal
+        except KeyError:
+            print("Value 3 not found in set_b.")
+
+        return {
+            "union": union,
+            "intersection": intersection,
+            "difference": difference,
+            "symmetric_difference": symmetric_difference,
+            "set_a_after_changes": set_a,
+            "set_b_after_changes": set_b
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 # Testing the function
 if __name__ == "__main__":

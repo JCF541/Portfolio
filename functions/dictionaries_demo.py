@@ -1,10 +1,10 @@
 """
-Dictionary Use Cases
-====================
-Dictionaries excel at mapping unique keys to values, making them ideal for lookups, 
-grouping data, and frequency counts.
+Enhanced Dictionary Use Cases with Error Handling
+==================================================
+Dictionaries excel at mapping unique keys to values, making them ideal for lookups,
+grouping data, and frequency counts. This version includes error handling and robustness.
 
-Use Cases Implemented:
+Use Cases:
 1. Word Frequency Counter
 2. Grouping Elements by a Condition
 3. Merging Dictionaries
@@ -20,12 +20,17 @@ def word_frequency_counter(text):
     Returns:
         dict: A dictionary with words as keys and their counts as values.
     """
-    words = text.split()
-    frequency = {}
-    for word in words:
-        word = word.lower().strip(",.!?")  # Normalize word
-        frequency[word] = frequency.get(word, 0) + 1
-    return frequency
+    try:
+        if not isinstance(text, str):
+            raise ValueError("Input must be a string.")
+        words = text.split()
+        frequency = {}
+        for word in words:
+            word = word.lower().strip(",.!?")
+            frequency[word] = frequency.get(word, 0) + 1
+        return frequency
+    except Exception as e:
+        return {"error": str(e)}
 
 def group_elements_by_parity(numbers):
     """
@@ -37,13 +42,18 @@ def group_elements_by_parity(numbers):
     Returns:
         dict: A dictionary with keys 'odd' and 'even' mapping to lists of numbers.
     """
-    grouped = {'odd': [], 'even': []}
-    for num in numbers:
-        if num % 2 == 0:
-            grouped['even'].append(num)
-        else:
-            grouped['odd'].append(num)
-    return grouped
+    try:
+        if not all(isinstance(num, int) for num in numbers):
+            raise ValueError("All elements must be integers.")
+        grouped = {'odd': [], 'even': []}
+        for num in numbers:
+            if num % 2 == 0:
+                grouped['even'].append(num)
+            else:
+                grouped['odd'].append(num)
+        return grouped
+    except Exception as e:
+        return {"error": str(e)}
 
 def merge_dictionaries(dict1, dict2):
     """
@@ -56,10 +66,17 @@ def merge_dictionaries(dict1, dict2):
     Returns:
         dict: A merged dictionary.
     """
-    merged = dict1.copy()
-    for key, value in dict2.items():
-        merged[key] = merged.get(key, 0) + value
-    return merged
+    try:
+        if not (isinstance(dict1, dict) and isinstance(dict2, dict)):
+            raise ValueError("Both inputs must be dictionaries.")
+        merged = dict1.copy()
+        for key, value in dict2.items():
+            if not isinstance(value, (int, float)):
+                raise ValueError(f"Invalid value type for key '{key}': {type(value)}")
+            merged[key] = merged.get(key, 0) + value
+        return merged
+    except Exception as e:
+        return {"error": str(e)}
 
 # Testing the functions
 if __name__ == "__main__":
