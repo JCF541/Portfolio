@@ -1,7 +1,7 @@
 """
-Sorting Algorithms
-==================
-This module demonstrates several sorting algorithms implemented as reusable functions.
+Enhanced Sorting Algorithms with Error Handling
+================================================
+This module demonstrates several sorting algorithms with added robustness.
 Each function operates on a list and returns the sorted list.
 
 Algorithms Covered:
@@ -19,106 +19,96 @@ def bubble_sort(numbers):
     Repeatedly steps through the list, compares adjacent elements, and swaps them
     if they are in the wrong order. This continues until the list is sorted.
 
-    Time Complexity: O(n^2)
+    Args:
+        numbers (list): List of integers or floats.
+
+    Returns:
+        list: Sorted list.
     """
-    n = len(numbers)
-    for i in range(n):
-        for j in range(0, n-i-1):
-            if numbers[j] > numbers[j+1]:
-                numbers[j], numbers[j+1] = numbers[j+1], numbers[j]
-    return numbers
+    try:
+        if not all(isinstance(num, (int, float)) for num in numbers):
+            raise ValueError("All elements must be integers or floats.")
+        n = len(numbers)
+        for i in range(n):
+            for j in range(0, n-i-1):
+                if numbers[j] > numbers[j+1]:
+                    numbers[j], numbers[j+1] = numbers[j+1], numbers[j]
+        return numbers
+    except Exception as e:
+        return {"error": str(e)}
 
 def selection_sort(numbers):
     """
     Selection Sort Algorithm
     -------------------------
-    Divides the list into sorted and unsorted sections. Repeatedly selects the smallest
-    element from the unsorted section and moves it to the sorted section.
+    Sorts by repeatedly selecting the smallest element from the unsorted portion.
 
-    Time Complexity: O(n^2)
-    """
-    for i in range(len(numbers)):
-        min_idx = i
-        for j in range(i+1, len(numbers)):
-            if numbers[j] < numbers[min_idx]:
-                min_idx = j
-        numbers[i], numbers[min_idx] = numbers[min_idx], numbers[i]
-    return numbers
+    Args:
+        numbers (list): List of integers or floats.
 
-def insertion_sort(numbers):
+    Returns:
+        list: Sorted list.
     """
-    Insertion Sort Algorithm
-    -------------------------
-    Builds the sorted list one element at a time by repeatedly taking an element
-    from the unsorted list and inserting it in the correct position.
-
-    Time Complexity: O(n^2)
-    """
-    for i in range(1, len(numbers)):
-        key = numbers[i]
-        j = i - 1
-        while j >= 0 and key < numbers[j]:
-            numbers[j + 1] = numbers[j]
-            j -= 1
-        numbers[j + 1] = key
-    return numbers
+    try:
+        if not all(isinstance(num, (int, float)) for num in numbers):
+            raise ValueError("All elements must be integers or floats.")
+        for i in range(len(numbers)):
+            min_idx = i
+            for j in range(i+1, len(numbers)):
+                if numbers[j] < numbers[min_idx]:
+                    min_idx = j
+            numbers[i], numbers[min_idx] = numbers[min_idx], numbers[i]
+        return numbers
+    except Exception as e:
+        return {"error": str(e)}
 
 def merge_sort(numbers):
     """
     Merge Sort Algorithm
     ---------------------
-    Divides the list into halves, recursively sorts each half, and then merges
-    the two sorted halves into a single sorted list.
+    Divides the list into halves, recursively sorts them, and merges them back.
 
-    Time Complexity: O(n log n)
+    Args:
+        numbers (list): List of integers or floats.
+
+    Returns:
+        list: Sorted list.
     """
-    if len(numbers) > 1:
-        mid = len(numbers) // 2
-        left_half = numbers[:mid]
-        right_half = numbers[mid:]
+    try:
+        if not all(isinstance(num, (int, float)) for num in numbers):
+            raise ValueError("All elements must be integers or floats.")
+        if len(numbers) > 1:
+            mid = len(numbers) // 2
+            left_half = numbers[:mid]
+            right_half = numbers[mid:]
 
-        merge_sort(left_half)
-        merge_sort(right_half)
+            merge_sort(left_half)
+            merge_sort(right_half)
 
-        i = j = k = 0
+            i = j = k = 0
 
-        while i < len(left_half) and j < len(right_half):
-            if left_half[i] < right_half[j]:
+            while i < len(left_half) and j < len(right_half):
+                if left_half[i] < right_half[j]:
+                    numbers[k] = left_half[i]
+                    i += 1
+                else:
+                    numbers[k] = right_half[j]
+                    j += 1
+                k += 1
+
+            while i < len(left_half):
                 numbers[k] = left_half[i]
                 i += 1
-            else:
+                k += 1
+
+            while j < len(right_half):
                 numbers[k] = right_half[j]
                 j += 1
-            k += 1
+                k += 1
 
-        while i < len(left_half):
-            numbers[k] = left_half[i]
-            i += 1
-            k += 1
-
-        while j < len(right_half):
-            numbers[k] = right_half[j]
-            j += 1
-            k += 1
-
-    return numbers
-
-def quick_sort(numbers):
-    """
-    Quick Sort Algorithm
-    ---------------------
-    Picks a pivot element and partitions the list such that elements less than
-    the pivot are on one side and elements greater than the pivot are on the other.
-    Recursively applies this partitioning to both sides.
-
-    Time Complexity: O(n log n)
-    """
-    if len(numbers) <= 1:
         return numbers
-    pivot = numbers[0]
-    less = [x for x in numbers[1:] if x <= pivot]
-    greater = [x for x in numbers[1:] if x > pivot]
-    return quick_sort(less) + [pivot] + quick_sort(greater)
+    except Exception as e:
+        return {"error": str(e)}
 
 # Testing the functions
 if __name__ == "__main__":
@@ -127,6 +117,4 @@ if __name__ == "__main__":
     print("Original List:", sample_data)
     print("Bubble Sort:", bubble_sort(sample_data[:]))
     print("Selection Sort:", selection_sort(sample_data[:]))
-    print("Insertion Sort:", insertion_sort(sample_data[:]))
     print("Merge Sort:", merge_sort(sample_data[:]))
-    print("Quick Sort:", quick_sort(sample_data[:]))

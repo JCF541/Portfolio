@@ -1,31 +1,47 @@
+"""
+Enhanced List Operations with Error Handling and Module Usage
+=============================================================
+This file demonstrates list operations such as creation, modification, sorting, and slicing.
+Includes error handling for invalid operations and the use of the `random` module for generating data.
+"""
+
+import random
+
 def list_operations():
-    # Creation of a list
-    numbers = [10, 20, 30, 40]
+    """
+    Performs various list operations including appending, removing, sorting, and slicing.
     
-    # Adding elements to the list
-    numbers.append(50)  # Adds 50 to the end of the list
-    numbers.extend([60, 70])  # Adds multiple elements to the list
-    
-    # Removing elements from the list
-    numbers.remove(20)  # Removes the first occurrence of 20
-    popped = numbers.pop()  # Removes and returns the last element
-    
-    # Sorting the list
-    numbers.sort()  # Sorts the list in ascending order
-    
-    # Reversing the list
-    numbers.reverse()  # Reverses the list order
-    
-    # Indexing and slicing
-    first_element = numbers[0]  # Access the first element
-    sublist = numbers[1:3]  # Slices the list from index 1 to 2
-    
-    return {
-        "final_list": numbers,
-        "popped_element": popped,
-        "first_element": first_element,
-        "sublist": sublist
-    }
+    Returns:
+        dict: Results of various list operations.
+    """
+    try:
+        # Creating a list with random numbers
+        numbers = random.sample(range(1, 101), 10)  # 10 unique random numbers between 1 and 100
+        
+        # Adding elements
+        numbers.append(50)
+        numbers.extend([60, 70])
+        
+        # Removing elements safely
+        numbers.remove(20) if 20 in numbers else print("Value 20 not in list.")
+        popped = numbers.pop()  # Remove and return the last element
+        
+        # Sorting and reversing
+        numbers.sort()
+        numbers.reverse()
+        
+        # Indexing and slicing
+        first_element = numbers[0]
+        sublist = numbers[1:3]
+        
+        return {
+            "final_list": numbers,
+            "popped_element": popped,
+            "first_element": first_element,
+            "sublist": sublist
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 # Testing the function
 if __name__ == "__main__":

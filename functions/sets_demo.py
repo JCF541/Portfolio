@@ -1,13 +1,13 @@
 """
-Set Use Cases
-=============
-Sets excel at removing duplicates, performing mathematical set operations, 
-and efficient membership tests.
+Enhanced Set Use Cases with Error Handling
+===========================================
+Sets excel at removing duplicates, performing mathematical set operations,
+and efficient membership tests. This version includes error handling and robustness.
 
-Use Cases Implemented:
+Use Cases:
 1. Removing Duplicates
-2. Finding Common Elements (Intersection)
-3. Finding Unique Elements (Symmetric Difference)
+2. Finding Common Elements
+3. Finding Unique Elements
 """
 
 def remove_duplicates(numbers):
@@ -20,7 +20,12 @@ def remove_duplicates(numbers):
     Returns:
         list: List with duplicates removed.
     """
-    return list(set(numbers))
+    try:
+        if not isinstance(numbers, list):
+            raise ValueError("Input must be a list.")
+        return list(set(numbers))
+    except Exception as e:
+        return {"error": str(e)}
 
 def find_common_elements(set1, set2):
     """
@@ -33,7 +38,12 @@ def find_common_elements(set1, set2):
     Returns:
         set: Intersection of the two sets.
     """
-    return set1 & set2
+    try:
+        if not (isinstance(set1, set) and isinstance(set2, set)):
+            raise ValueError("Both inputs must be sets.")
+        return set1 & set2
+    except Exception as e:
+        return {"error": str(e)}
 
 def find_unique_elements(set1, set2):
     """
@@ -46,7 +56,12 @@ def find_unique_elements(set1, set2):
     Returns:
         set: Symmetric difference of the two sets.
     """
-    return set1 ^ set2
+    try:
+        if not (isinstance(set1, set) and isinstance(set2, set)):
+            raise ValueError("Both inputs must be sets.")
+        return set1 ^ set2
+    except Exception as e:
+        return {"error": str(e)}
 
 # Testing the functions
 if __name__ == "__main__":
