@@ -4,6 +4,8 @@ Member Model
 Represents a library member who can borrow items from the library.
 """
 
+from utils.id_generator import generate_id
+
 class Member:
     """
     Represents a library member.
@@ -14,8 +16,8 @@ class Member:
         email (str): The member's email address.
         borrowed_items (list): A list of items currently borrowed by the member.
     """
-    def __init__(self, member_id, name, email):
-        self.member_id = member_id
+    def __init__(self, name, email):
+        self.member_id = generate_id("MB")  # Unique ID with "MB" prefix
         self.name = name
         self.email = email
         self.borrowed_items = []

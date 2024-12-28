@@ -4,7 +4,7 @@ Member Controller
 Manages operations related to library members.
 """
 
-from library_management.models.member import Member
+from models.member import Member
 
 
 class MemberController:
