@@ -4,6 +4,7 @@ Library Model
 Represents a library with its own catalog of items and registered members.
 """
 
+from utils.id_generator import generate_id
 from .book import Book
 from .magazine import Magazine
 from .member import Member
@@ -13,11 +14,13 @@ class Library:
     Represents a library system.
 
     Attributes:
+        library_id (str): A unique ID for the library.
         name (str): The name of the library.
         catalog (list): A collection of library items.
         members (list): A list of registered members.
     """
     def __init__(self, name):
+        self.library_id = generate_id("LB")  # Unique ID with "LB" prefix
         self.name = name
         self.catalog = []
         self.members = []
@@ -81,3 +84,6 @@ class Library:
             list: A list of all members.
         """
         return [str(member) for member in self.members]
+
+    def __str__(self):
+        return f"Library ID: {self.library_id}, Name: {self.name}, Items: {len(self.catalog)}, Members: {len(self.members)}"

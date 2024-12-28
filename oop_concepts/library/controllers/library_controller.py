@@ -4,10 +4,10 @@ Library Controller
 Handles library management operations, including item and member management.
 """
 
-from library_management.models.library import Library
-from library_management.models.member import Member
-from library_management.models.book import Book
-from library_management.models.magazine import Magazine
+from models.library import Library
+from models.member import Member
+from models.book import Book
+from models.magazine import Magazine
 
 
 class LibraryController:

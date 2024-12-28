@@ -4,8 +4,8 @@ Library Management Application
 Main entry point for the library management system.
 """
 
-from library.controllers.library_controller import LibraryController
-from library.views.library_view import LibraryView
+from controllers.library_controller import LibraryController
+from views.library_view import LibraryView
 
 def main():
     library = LibraryController()
