@@ -7,6 +7,8 @@ Handles file-based persistence for the library management system.
 import json
 import os
 
+from models.member import Member
+
 
 def save_data(filepath, data):
     """

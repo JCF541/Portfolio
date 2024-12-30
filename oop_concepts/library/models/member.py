@@ -16,11 +16,20 @@ class Member:
         email (str): The member's email address.
         borrowed_items (list): A list of items currently borrowed by the member.
     """
-    def __init__(self, name, email):
-        self.member_id = generate_id("MB")  # Unique ID with "MB" prefix
+    def __init__(self, name, email, member_id=None, borrowed_items=None):
+        """
+        Initializes a Member instance.
+
+        Args:
+            name (str): The member's name.
+            email (str): The member's email address.
+            member_id (str, optional): A unique ID for the member. If not provided, one is generated.
+            borrowed_items (list, optional): A list of borrowed items. Default is an empty list.
+        """
+        self.member_id = member_id if member_id else generate_id("MB")
         self.name = name
         self.email = email
-        self.borrowed_items = []
+        self.borrowed_items = borrowed_items if borrowed_items else []
 
     def borrow_item(self, item):
         """
