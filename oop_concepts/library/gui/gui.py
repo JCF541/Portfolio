@@ -1,9 +1,3 @@
-"""
-Graphical User Interface (GUI)
-==============================
-Fully functional GUI for the Library Management System using Tkinter.
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from controllers.library_controller import LibraryController
@@ -11,7 +5,6 @@ from models.book import Book
 from models.magazine import Magazine
 from models.member import Member
 from utils.file_manager import save_data, load_data, serialize_library, deserialize_library
-
 
 class AppGUI:
     def __init__(self, root):
@@ -52,7 +45,7 @@ class AppGUI:
     def create_header(self):
         """Create the header section with title and library management buttons."""
         header_frame = ttk.Frame(self.root, padding=10)
-        header_frame.pack(fill=tk.X)
+        header_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
 
         # Title
         title_label = ttk.Label(
@@ -68,32 +61,63 @@ class AppGUI:
     def create_main_content(self):
         """Create the main content section with a table and action buttons."""
         main_frame = ttk.Frame(self.root, padding=10)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        main_frame.grid(row=1, column=0, sticky="nsew")
+
+        # Configure grid weight for resizing
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=0)
 
         # Left: Data Table
         self.notebook = ttk.Notebook(main_frame)
-        self.notebook.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        self.notebook.pack(fill=tk.BOTH, expand=True)
 
-        self.members_tab = ttk.Frame(self.notebook)
-        self.books_tab = ttk.Frame(self.notebook)
-        self.magazines_tab = ttk.Frame(self.notebook)
-
-        self.notebook.add(self.members_tab, text="Members")
-        self.notebook.add(self.books_tab, text="Books")
-        self.notebook.add(self.magazines_tab, text="Magazines")
+        self.members_tab = self.create_tab(self.notebook, "Members", ["member_id", "name", "email"])
+        self.books_tab = self.create_tab(self.notebook, "Books", ["ID", "Title", "Author", "Genre"])
+        self.magazines_tab = self.create_tab(self.notebook, "Magazines", ["ID", "Title", "Author", "Issue", "Date"])
 
         # Right: Action Buttons
-        action_frame = ttk.Frame(main_frame)
-        action_frame.pack(side=tk.RIGHT, fill=tk.Y)
+        action_frame = ttk.Frame(self.root, padding=10)
+        action_frame.grid(row=1, column=1, sticky="ns")
 
         ttk.Button(action_frame, text="ADD", command=lambda: self.handle_action("add")).pack(fill=tk.X, pady=10)
         ttk.Button(action_frame, text="UPDATE", command=lambda: self.handle_action("update")).pack(fill=tk.X, pady=10)
         ttk.Button(action_frame, text="DELETE", command=lambda: self.handle_action("delete")).pack(fill=tk.X, pady=10)
 
+    def create_tab(self, notebook, tab_name, columns):
+        """
+        Create a tab with a dynamically resizable Treeview table.
+
+        Args:
+            notebook (ttk.Notebook): The parent notebook widget.
+            tab_name (str): The name of the tab.
+            columns (list): The column headers for the Treeview.
+
+        Returns:
+            ttk.Frame: The created tab.
+        """
+        tab = ttk.Frame(notebook)
+        notebook.add(tab, text=tab_name)
+
+        # Create Treeview with dynamic columns
+        tree = ttk.Treeview(tab, columns=columns, show="headings", selectmode="browse")
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        # Configure dynamic column sizes
+        for col in columns:
+            if col == "ID":
+                tree.column(col, width=100, anchor="center", stretch=True)
+            else:
+                tree.column(col, width=150, anchor="w", stretch=True)
+            tree.heading(col, text=col)
+
+        setattr(self, f"{tab_name.lower()}_tree", tree)
+        return tab
+
     def create_footer(self):
         """Create the footer section with a helpful message."""
         footer_frame = ttk.Frame(self.root, padding=10)
-        footer_frame.pack(fill=tk.X)
+        footer_frame.grid(row=2, column=0, columnspan=2, sticky="ew")
 
         ttk.Label(
             footer_frame,
@@ -103,19 +127,26 @@ class AppGUI:
 
     def refresh_tabs(self):
         """Refresh the data displayed in all tabs."""
-        self.display_data(self.controller.library.list_members(), self.members_tab)
-        self.display_data(self.controller.library.list_catalog(), self.books_tab)
+        self.populate_tree(self.members_tree, self.controller.library.members, ["member_id", "name", "email"])
+        self.populate_tree(self.books_tree, self.controller.library.catalog, ["item_id", "title", "author", "genre"])
+        self.populate_tree(
+            self.magazines_tree, self.controller.library.catalog, ["item_id", "title", "author", "issue_number", "publication_date"]
+        )
 
-    def display_data(self, data, tab):
-        """Display data in the given tab."""
-        for widget in tab.winfo_children():
-            widget.destroy()
+    def populate_tree(self, tree, data, fields):
+        """
+        Populate a Treeview with data.
 
-        if not data:
-            ttk.Label(tab, text="No data available.", font=("Helvetica", 12)).pack(pady=10)
-        else:
-            for item in data:
-                ttk.Label(tab, text=str(item)).pack(anchor="w", padx=10)
+        Args:
+            tree (ttk.Treeview): The Treeview widget to populate.
+            data (list): The list of objects to display.
+            fields (list): The attributes to display as columns.
+        """
+        tree.delete(*tree.get_children())
+        for obj in data:
+            obj_id = obj.member_id if isinstance(obj, Member) else obj.item_id
+            values = [getattr(obj, field, "") for field in fields]
+            tree.insert("", "end", iid=obj_id, values=values)
 
     def handle_action(self, action_type):
         """Handle tab-specific actions like add, update, and delete."""
@@ -160,20 +191,20 @@ class AppGUI:
         name = self.prompt_for_input("Enter member name:")
         email = self.prompt_for_input("Enter member email:")
         if name and email:
-            member = Member(name, email)
-            self.controller.add_member(member)
+            self.controller.add_member(name, email)  # Pass name and email directly
             self.refresh_tabs()
             messagebox.showinfo("Add Member", "Member added successfully.")
 
     def update_member_form(self):
         """Display a form to update a member."""
-        member_id = self.prompt_for_id("member")
-        if not member_id:
+        selected_item = self.get_selected_item(self.members_tree)
+        if not selected_item:
             return
 
+        member_id = selected_item["member_id"]
         updates = {
-            "name": self.prompt_for_input("Enter new name (leave blank to keep current):"),
-            "email": self.prompt_for_input("Enter new email (leave blank to keep current):"),
+            "name": self.prompt_for_input(f"Enter new name (current: {selected_item['name']}):"),
+            "email": self.prompt_for_input(f"Enter new email (current: {selected_item['email']}):"),
         }
 
         if self.controller.update_member(member_id, **updates):
@@ -183,9 +214,17 @@ class AppGUI:
             messagebox.showwarning("Update Member", "Member not found.")
 
     def delete_member(self):
-        """Delete a member."""
-        member_id = self.prompt_for_id("member")
-        if member_id and self.controller.remove_member(member_id):
+        """Delete a selected member."""
+        selected_item = self.get_selected_item(self.members_tree)
+        if not selected_item:
+            return
+
+        member_id = selected_item.get("member_id")  # Safely retrieve key
+        if not member_id:
+            messagebox.showwarning("Delete Member", "Member ID not found.")
+            return
+
+        if self.controller.delete_member(member_id):
             self.refresh_tabs()
             messagebox.showinfo("Delete Member", "Member deleted successfully.")
         else:
@@ -214,40 +253,77 @@ class AppGUI:
             messagebox.showinfo("Add Magazine", "Magazine added successfully.")
 
     def update_item_form(self):
-        """Display a form to update an item."""
-        item_id = self.prompt_for_id("item")
-        if not item_id:
+        """Display a form to update an item (book or magazine)."""
+        current_tab = self.notebook.tab(self.notebook.select(), "text")
+        tree = self.books_tree if current_tab == "Books" else self.magazines_tree
+
+        selected_item = self.get_selected_item(tree)
+        if not selected_item:
             return
 
+        item_id = selected_item["item_id"]
         updates = {
-            "title": self.prompt_for_input("Enter new title (leave blank to keep current):"),
-            "author": self.prompt_for_input("Enter new author (leave blank to keep current):"),
+            "title": self.prompt_for_input(f"Enter new title (current: {selected_item['title']}):"),
+            "author": self.prompt_for_input(f"Enter new author (current: {selected_item['author']}):"),
         }
+
+        if current_tab == "Books":
+            updates["genre"] = self.prompt_for_input(f"Enter new genre (current: {selected_item['genre']}):")
+        elif current_tab == "Magazines":
+            updates.update({
+                "issue_number": self.prompt_for_input(f"Enter new issue (current: {selected_item['issue_number']}):"),
+                "publication_date": self.prompt_for_input(f"Enter new date (current: {selected_item['publication_date']}):"),
+            })
 
         if self.controller.update_item(item_id, **updates):
             self.refresh_tabs()
-            messagebox.showinfo("Update Item", "Item updated successfully.")
+            messagebox.showinfo(f"Update {current_tab[:-1]}", f"{current_tab[:-1]} updated successfully.")
         else:
-            messagebox.showwarning("Update Item", "Item not found.")
+            messagebox.showwarning(f"Update {current_tab[:-1]}", f"{current_tab[:-1]} not found.")
 
     def delete_item(self):
-        """Delete an item (book or magazine)."""
-        item_id = self.prompt_for_id("item")
-        if item_id and self.controller.delete_item(item_id):
-            self.refresh_tabs()
-            messagebox.showinfo("Delete Item", "Item deleted successfully.")
-        else:
-            messagebox.showwarning("Delete Item", "Item not found.")
+        """Delete a selected item (book or magazine)."""
+        current_tab = self.notebook.tab(self.notebook.select(), "text")
+        tree = self.books_tree if current_tab == "Books" else self.magazines_tree
 
-    # Input Helpers
+        selected_item = self.get_selected_item(tree)
+        if not selected_item:
+            return
+
+        item_id = selected_item["item_id"]
+        if self.controller.delete_item(item_id):
+            self.refresh_tabs()
+            messagebox.showinfo(f"Delete {current_tab[:-1]}", f"{current_tab[:-1]} deleted successfully.")
+        else:
+            messagebox.showwarning(f"Delete {current_tab[:-1]}", f"{current_tab[:-1]} not found.")
+
+    # Utility Functions
+    def get_selected_item(self, tree):
+        """
+        Get the selected item from a Treeview.
+
+        Args:
+            tree (ttk.Treeview): The Treeview widget.
+
+        Returns:
+            dict: A dictionary mapping column names to selected row values.
+        """
+        selected = tree.selection()
+        if not selected:
+            messagebox.showwarning("Selection Error", "No item selected.")
+            return None
+
+        # Get the column headers from the Treeview
+        columns = tree["columns"]
+        item = tree.item(selected[0], "values")
+
+        selected_item = dict(zip(columns, item))
+        print(f"DEBUG: Selected item -> {selected_item}")  # Debugging output
+        return selected_item
+
     def prompt_for_input(self, prompt):
         """Prompt the user for input."""
         return simpledialog.askstring("Input", prompt)
-
-    def prompt_for_id(self, item_type):
-        """Prompt the user for an item/member ID."""
-        return simpledialog.askstring("ID Input", f"Enter the {item_type} ID:")
-
 
 if __name__ == "__main__":
     root = tk.Tk()

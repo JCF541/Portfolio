@@ -7,27 +7,21 @@ Handles the business logic for the Library Management System.
 from models.library import Library
 from models.book import Book
 from models.magazine import Magazine
+from controllers.member_controller import MemberController
 
 
 class LibraryController:
     """
-    Manages library operations including catalog management and member management.
+    Manages library operations including catalog and member management.
     """
 
     def __init__(self, library_name):
         self.library = Library(library_name)
+        self.member_controller = MemberController()
 
+    # Catalog Management
     def add_item(self, item_type, **attributes):
-        """
-        Add an item (book or magazine) to the library catalog.
-
-        Args:
-            item_type (str): Type of item ('Book' or 'Magazine').
-            attributes (dict): Attributes of the item (e.g., title, author).
-        
-        Returns:
-            bool: True if the item was added successfully, False otherwise.
-        """
+        """Add an item (book or magazine) to the library catalog."""
         item_classes = {"Book": Book, "Magazine": Magazine}
         if item_type not in item_classes:
             return False
@@ -37,30 +31,13 @@ class LibraryController:
         return True
 
     def delete_item(self, item_id):
-        """
-        Delete an item from the catalog by its ID.
-
-        Args:
-            item_id (str): The unique ID of the item.
-        
-        Returns:
-            bool: True if the item was found and deleted, False otherwise.
-        """
+        """Delete an item from the catalog by its ID."""
         initial_count = len(self.library.catalog)
         self.library.remove_item(item_id)
         return len(self.library.catalog) < initial_count
 
     def update_item(self, item_id, **updates):
-        """
-        Update attributes of an item in the catalog.
-
-        Args:
-            item_id (str): The ID of the item to update.
-            updates (dict): The fields to update with their new values.
-        
-        Returns:
-            bool: True if the item was found and updated, False otherwise.
-        """
+        """Update attributes of an item in the catalog."""
         item = next((i for i in self.library.catalog if i.item_id == item_id), None)
         if not item:
             return False
@@ -72,26 +49,39 @@ class LibraryController:
         return True
 
     def list_items(self):
-        """
-        List all items in the library catalog.
-
-        Returns:
-            list: A list of string representations of the items.
-        """
+        """List all items in the library catalog."""
         return self.library.list_catalog()
 
-    def borrow_item(self, member_id, item_id):
-        """
-        Allow a member to borrow an item from the library.
+    # Member Management
+    def add_member(self, name, email):
+        """Create and register a new member."""
+        member = self.member_controller.add_member(name, email)
+        self.library.add_member(member)
+        return member
 
-        Args:
-            member_id (str): The member's ID.
-            item_id (str): The ID of the item to borrow.
-        
-        Returns:
-            str: Message indicating the outcome of the borrow operation.
-        """
-        member = self.library.find_member(member_id)
+    def update_member(self, member_id, **updates):
+        """Update a member's attributes."""
+        return self.member_controller.update_member(member_id, **updates)
+
+    def delete_member(self, member_id):
+        """Remove a member by their ID."""
+        if self.member_controller.delete_member(member_id):
+            self.library.members = [m for m in self.library.members if m.member_id != member_id]
+            return True
+        return False
+
+    def find_member(self, member_id):
+        """Find a member by their ID."""
+        return self.member_controller.find_member(member_id)
+
+    def list_members(self):
+        """List all registered members."""
+        return self.member_controller.list_members()
+
+    # Borrow and Return Operations
+    def borrow_item(self, member_id, item_id):
+        """Allow a member to borrow an item."""
+        member = self.find_member(member_id)
         if not member:
             return "Member not found."
 
@@ -104,17 +94,8 @@ class LibraryController:
         return f"'{item.title}' borrowed by {member.name}."
 
     def return_item(self, member_id, item_id):
-        """
-        Allow a member to return an item to the library.
-
-        Args:
-            member_id (str): The member's ID.
-            item_id (str): The ID of the item to return.
-        
-        Returns:
-            str: Message indicating the outcome of the return operation.
-        """
-        member = self.library.find_member(member_id)
+        """Allow a member to return an item."""
+        member = self.find_member(member_id)
         if not member:
             return "Member not found."
 
@@ -125,12 +106,3 @@ class LibraryController:
         self.library.add_item(item)
         member.return_item(item.item_id)
         return f"'{item.title}' returned by {member.name}."
-
-    def list_members(self):
-        """
-        List all registered members.
-
-        Returns:
-            list: A list of string representations of the members.
-        """
-        return self.library.list_members()
