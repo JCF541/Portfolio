@@ -1,91 +1,108 @@
 """
-Library Controller
-===================
-Handles library management operations, including item and member management.
+LibraryController
+==================
+Handles the business logic for the Library Management System.
 """
 
 from models.library import Library
-from models.member import Member
 from models.book import Book
 from models.magazine import Magazine
+from controllers.member_controller import MemberController
 
 
 class LibraryController:
     """
-    Handles library operations and coordinates between models and views.
+    Manages library operations including catalog and member management.
     """
 
-    def __init__(self, library_name="Default Library"):
+    def __init__(self, library_name):
         self.library = Library(library_name)
+        self.member_controller = MemberController()
 
-    def add_book(self, title, author, genre):
-        """
-        Adds a book to the library's catalog.
-        """
-        book = Book(title, author, genre)
-        self.library.add_item(book)
+    # Catalog Management
+    def add_item(self, item_type, **attributes):
+        """Add an item (book or magazine) to the library catalog."""
+        item_classes = {"Book": Book, "Magazine": Magazine}
+        if item_type not in item_classes:
+            return False
 
-    def add_magazine(self, title, author, issue_number, publication_date):
-        """
-        Adds a magazine to the library's catalog.
-        """
-        magazine = Magazine(title, author, issue_number, publication_date)
-        self.library.add_item(magazine)
+        item = item_classes[item_type](**attributes)
+        self.library.add_item(item)
+        return True
 
-    def add_member(self, member):
-        """
-        Registers a new member to the library.
-        """
-        self.library.add_member(member)
+    def delete_item(self, item_id):
+        """Delete an item from the catalog by its ID."""
+        initial_count = len(self.library.catalog)
+        self.library.remove_item(item_id)
+        return len(self.library.catalog) < initial_count
 
-    def borrow_item(self, member_id, item_title):
-        """
-        Allows a member to borrow an item by its title.
-        """
-        member = self.library.find_member(member_id)
-        if not member:
-            raise ValueError(f"No member found with ID: {member_id}")
+    def update_item(self, item_id, **updates):
+        """Update attributes of an item in the catalog."""
+        item = next((i for i in self.library.catalog if i.item_id == item_id), None)
+        if not item:
+            return False
 
-        for item in self.library.catalog:
-            if item.title == item_title:
-                member.borrow_item(item)
-                self.library.remove_item(item.item_id)
-                return f"'{item.title}' has been borrowed by {member.name}."
-        raise ValueError(f"No item with title '{item_title}' found in the catalog.")
+        for key, value in updates.items():
+            if hasattr(item, key) and value is not None:
+                setattr(item, key, value)
 
-    def return_item(self, member_id, item_title):
-        """
-        Allows a member to return an item by its title.
-        """
-        member = self.library.find_member(member_id)
-        if not member:
-            raise ValueError(f"No member found with ID: {member_id}")
+        return True
 
-        for item in member.borrowed_items:
-            if item.title == item_title:
-                member.return_item(item.item_id)
-                self.library.add_item(item)
-                return f"'{item.title}' has been returned to the library."
-        raise ValueError(f"No borrowed item with title '{item_title}' found for member {member.name}.")
-
-    def view_items(self):
-        """
-        Returns a list of all catalog items in the library.
-        """
+    def list_items(self):
+        """List all items in the library catalog."""
         return self.library.list_catalog()
 
-    def list_members(self):
-        """
-        Returns a list of all registered members.
-        """
-        return self.library.list_members()
+    # Member Management
+    def add_member(self, name, email):
+        """Create and register a new member."""
+        member = self.member_controller.add_member(name, email)
+        self.library.add_member(member)
+        return member
 
-    def delete_item(self, item_title):
-        """
-        Deletes an item by its title from the library's catalog.
-        """
-        for item in self.library.catalog:
-            if item.title == item_title:
-                self.library.remove_item(item.item_id)
-                return f"'{item.title}' has been deleted from the catalog."
-        raise ValueError(f"No item with title '{item_title}' found in the catalog.")
+    def update_member(self, member_id, **updates):
+        """Update a member's attributes."""
+        return self.member_controller.update_member(member_id, **updates)
+
+    def delete_member(self, member_id):
+        """Remove a member by their ID."""
+        if self.member_controller.delete_member(member_id):
+            self.library.members = [m for m in self.library.members if m.member_id != member_id]
+            return True
+        return False
+
+    def find_member(self, member_id):
+        """Find a member by their ID."""
+        return self.member_controller.find_member(member_id)
+
+    def list_members(self):
+        """List all registered members."""
+        return self.member_controller.list_members()
+
+    # Borrow and Return Operations
+    def borrow_item(self, member_id, item_id):
+        """Allow a member to borrow an item."""
+        member = self.find_member(member_id)
+        if not member:
+            return "Member not found."
+
+        item = next((i for i in self.library.catalog if i.item_id == item_id), None)
+        if not item:
+            return "Item not found in the catalog."
+
+        member.borrow_item(item)
+        self.library.remove_item(item.item_id)
+        return f"'{item.title}' borrowed by {member.name}."
+
+    def return_item(self, member_id, item_id):
+        """Allow a member to return an item."""
+        member = self.find_member(member_id)
+        if not member:
+            return "Member not found."
+
+        item = next((i for i in member.borrowed_items if i.item_id == item_id), None)
+        if not item:
+            return "Item not found in borrowed items."
+
+        self.library.add_item(item)
+        member.return_item(item.item_id)
+        return f"'{item.title}' returned by {member.name}."

@@ -1,11 +1,13 @@
 """
 Library Management Application
 ==============================
-Main entry point for the application.
+Entry point to launch the GUI.
 """
 
-from models.app import App
+from tkinter import Tk
+from gui.gui import AppGUI
 
 if __name__ == "__main__":
-    app = App()
-    app.run()
+    root = Tk()
+    app = AppGUI(root)
+    root.mainloop()
