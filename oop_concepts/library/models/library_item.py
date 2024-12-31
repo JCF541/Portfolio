@@ -1,10 +1,11 @@
 """
 Library Item Model
-===================
-Defines a base class for items in the library.
+==================
+Base class for all library items.
 """
 
 from utils.id_generator import generate_id
+
 
 class LibraryItem:
     """
@@ -15,6 +16,7 @@ class LibraryItem:
         title (str): Title of the item.
         author (str): Author of the item.
     """
+
     def __init__(self, title, author):
         self.item_id = generate_id("LI")  # Unique ID with "LI" prefix
         self.title = title

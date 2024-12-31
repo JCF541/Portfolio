@@ -5,9 +5,7 @@ Represents a library with its own catalog of items and registered members.
 """
 
 from utils.id_generator import generate_id
-from .book import Book
-from .magazine import Magazine
-from .member import Member
+
 
 class Library:
     """
@@ -19,6 +17,7 @@ class Library:
         catalog (list): A collection of library items.
         members (list): A list of registered members.
     """
+
     def __init__(self, name):
         self.library_id = generate_id("LB")  # Unique ID with "LB" prefix
         self.name = name
@@ -26,63 +25,27 @@ class Library:
         self.members = []
 
     def add_item(self, item):
-        """
-        Adds an item to the library's catalog.
-
-        Args:
-            item (LibraryItem): The item to add.
-        """
+        """Adds an item to the library catalog."""
         self.catalog.append(item)
 
     def remove_item(self, item_id):
-        """
-        Removes an item from the catalog by ID.
-
-        Args:
-            item_id (str): The unique ID of the item to remove.
-        """
+        """Removes an item from the catalog by ID."""
         self.catalog = [item for item in self.catalog if item.item_id != item_id]
 
     def add_member(self, member):
-        """
-        Registers a new member to the library.
-
-        Args:
-            member (Member): The member to register.
-        """
+        """Registers a new member."""
         self.members.append(member)
 
     def find_member(self, member_id):
-        """
-        Finds a member by their ID.
-
-        Args:
-            member_id (str): The ID of the member.
-
-        Returns:
-            Member: The member object if found, otherwise None.
-        """
-        for member in self.members:
-            if member.member_id == member_id:
-                return member
-        return None
+        """Finds a member by ID."""
+        return next((m for m in self.members if m.member_id == member_id), None)
 
     def list_catalog(self):
-        """
-        Lists all items in the catalog.
-
-        Returns:
-            list: A list of all items in the catalog.
-        """
+        """Lists all items in the catalog."""
         return [str(item) for item in self.catalog]
 
     def list_members(self):
-        """
-        Lists all registered members.
-
-        Returns:
-            list: A list of all members.
-        """
+        """Lists all registered members."""
         return [str(member) for member in self.members]
 
     def __str__(self):

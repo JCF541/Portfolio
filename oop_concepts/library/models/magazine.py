@@ -6,6 +6,7 @@ Represents a magazine in the library.
 
 from .library_item import LibraryItem
 
+
 class Magazine(LibraryItem):
     """
     Represents a magazine in the library.
@@ -14,6 +15,7 @@ class Magazine(LibraryItem):
         issue_number (str): The issue number of the magazine.
         publication_date (str): The publication date of the magazine.
     """
+
     def __init__(self, title, author, issue_number, publication_date):
         super().__init__(title, author)
         self.issue_number = issue_number
