@@ -5,19 +5,12 @@ Represents a magazine in the library.
 """
 
 from .library_item import LibraryItem
+from utils.file_manager import generate_id
 
 
 class Magazine(LibraryItem):
-    """
-    Represents a magazine in the library.
-
-    Attributes:
-        issue_number (str): The issue number of the magazine.
-        publication_date (str): The publication date of the magazine.
-    """
-
-    def __init__(self, title, author, issue_number, publication_date):
-        super().__init__(title, author)
+    def __init__(self, title, author, issue_number, publication_date, item_id=None):
+        super().__init__(title, author, item_id or generate_id("MG"))
         self.issue_number = issue_number
         self.publication_date = publication_date
 

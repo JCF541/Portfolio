@@ -1,13 +1,7 @@
-"""
-File Manager
-============
-Handles file-based persistence for the library management system.
-"""
-
 import json
 import os
-
 from models.member import Member
+from utils.id_generator import generate_id  # Import generate_id from id_utils
 
 
 def save_data(filepath, data):
@@ -68,16 +62,54 @@ def deserialize_library(data, library_class, item_classes):
     Returns:
         Library: Deserialized library instance.
     """
-    library = library_class(data["name"])
-    library.library_id = data["library_id"]
+    library_name = data.get("name", "Unnamed Library")
+    library_id = data.get("library_id", generate_id("LB"))
 
-    for item_data in data["catalog"]:
-        item_type = item_data.pop("__class__", "LibraryItem")
-        item_class = item_classes.get(item_type)
+    # Initialize library
+    library = library_class(library_name)
+    library.library_id = library_id
+
+    # Deserialize catalog
+    catalog = data.get("catalog", [])
+    for item_data in catalog:
+        # Dynamically determine the item class based on its attributes
+        if "genre" in item_data:
+            item_class = item_classes.get("Book")
+        elif "issue_number" in item_data:
+            item_class = item_classes.get("Magazine")
+        else:
+            item_class = None
+
         if item_class:
-            library.add_item(item_class(**item_data))
+            item = item_class(**item_data)
+            library.add_item(item)
+        else:
+            print(f"DEBUG: Unknown item type for {item_data}")
 
-    for member_data in data["members"]:
-        library.add_member(Member(**member_data))
+    # Deserialize members
+    members = data.get("members", [])
+    for member_data in members:
+        borrowed_items = []
+        for borrowed_item_data in member_data.get("borrowed_items", []):
+            # Dynamically determine the borrowed item class
+            if "genre" in borrowed_item_data:
+                borrowed_item_class = item_classes.get("Book")
+            elif "issue_number" in borrowed_item_data:
+                borrowed_item_class = item_classes.get("Magazine")
+            else:
+                borrowed_item_class = None
 
+            if borrowed_item_class:
+                borrowed_item = borrowed_item_class(**borrowed_item_data)
+                borrowed_items.append(borrowed_item)
+
+        member = Member(
+            member_id=member_data["member_id"],
+            name=member_data["name"],
+            email=member_data["email"],
+            borrowed_items=borrowed_items,
+        )
+        library.add_member(member)
+
+    print(f"DEBUG: Deserialized library: {library.name}")
     return library

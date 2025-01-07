@@ -6,19 +6,9 @@ Base class for all library items.
 
 from utils.id_generator import generate_id
 
-
 class LibraryItem:
-    """
-    Represents an item in the library.
-
-    Attributes:
-        item_id (str): A unique ID for the library item.
-        title (str): Title of the item.
-        author (str): Author of the item.
-    """
-
-    def __init__(self, title, author):
-        self.item_id = generate_id("LI")  # Unique ID with "LI" prefix
+    def __init__(self, title, author, item_id=None):
+        self.item_id = item_id or generate_id("LI")
         self.title = title
         self.author = author
 
