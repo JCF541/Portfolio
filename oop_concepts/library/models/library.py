@@ -1,10 +1,6 @@
-"""
-Library Model
-=============
-Represents a library with its own catalog of items and registered members.
-"""
-
 from utils.id_generator import generate_id
+from models.book import Book
+from models.magazine import Magazine
 
 
 class Library:
@@ -43,6 +39,14 @@ class Library:
     def list_catalog(self):
         """Lists all items in the catalog."""
         return [str(item) for item in self.catalog]
+
+    def list_books(self):
+        """Lists all books in the catalog."""
+        return [item for item in self.catalog if isinstance(item, Book)]
+
+    def list_magazines(self):
+        """Lists all magazines in the catalog."""
+        return [item for item in self.catalog if isinstance(item, Magazine)]
 
     def list_members(self):
         """Lists all registered members."""

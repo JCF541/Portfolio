@@ -128,25 +128,27 @@ class AppGUI:
     def refresh_tabs(self):
         """Refresh the data displayed in all tabs."""
         self.populate_tree(self.members_tree, self.controller.library.members, ["member_id", "name", "email"])
-        self.populate_tree(self.books_tree, self.controller.library.catalog, ["item_id", "title", "author", "genre"])
         self.populate_tree(
-            self.magazines_tree, self.controller.library.catalog, ["item_id", "title", "author", "issue_number", "publication_date"]
+            self.books_tree, self.controller.library.list_books(), ["item_id", "title", "author", "genre"]
+        )
+        self.populate_tree(
+            self.magazines_tree,
+            self.controller.library.list_magazines(),
+            ["item_id", "title", "author", "issue_number", "publication_date"],
         )
 
-    def populate_tree(self, tree, data, fields):
-        """
-        Populate a Treeview with data.
 
-        Args:
-            tree (ttk.Treeview): The Treeview widget to populate.
-            data (list): The list of objects to display.
-            fields (list): The attributes to display as columns.
-        """
+    def populate_tree(self, tree, data, fields):
         tree.delete(*tree.get_children())
         for obj in data:
             obj_id = obj.member_id if isinstance(obj, Member) else obj.item_id
             values = [getattr(obj, field, "") for field in fields]
+
+            # Debug print
+            print(f"DEBUG: Inserting {obj_id} -> {values}")
+
             tree.insert("", "end", iid=obj_id, values=values)
+
 
     def handle_action(self, action_type):
         """Handle tab-specific actions like add, update, and delete."""
@@ -173,11 +175,17 @@ class AppGUI:
         if data:
             from models.library import Library
             item_classes = {"Book": Book, "Magazine": Magazine}
+
             self.controller.library = deserialize_library(data, Library, item_classes)
+
+            # Debug print
+            print(f"DEBUG: Library after deserialization: {self.controller.library}")
+
             self.refresh_tabs()
             messagebox.showinfo("Load Library", "Library loaded successfully.")
         else:
             messagebox.showwarning("Load Library", "No saved library data found.")
+
 
     def save_library(self):
         """Save the current library to a file."""
