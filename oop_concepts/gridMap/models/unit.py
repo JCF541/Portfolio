@@ -1,4 +1,5 @@
 class Unit:
-    def __init__(self, name, initiative):
+    def __init__(self, name, speed):
         self.name = name
-        self.initiative = initiative  # Determines turn order
+        self.speed = speed  # Determines turn order
+        self.health = 100  # Default health value

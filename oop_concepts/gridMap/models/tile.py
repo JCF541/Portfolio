@@ -5,4 +5,4 @@ class Tile:
 
     def is_walkable(self):
         """Check if the tile can be walked on."""
-        return self.terrain != 'water' and self.unit is None
+        return self.terrain not in ['water', 'mountain'] and self.unit is None

@@ -11,7 +11,7 @@ class GridController:
         self.view.display_map(self.grid_map)
 
     def add_unit(self, x, y, name, initiative):
-        """Adds a unit to the grid."""
+        """Add a unit to the grid."""
         unit = Unit(name, initiative)
         self.grid_map.place_unit(x, y, unit)
         self.view.display_map(self.grid_map)
